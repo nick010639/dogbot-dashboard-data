@@ -1,0 +1,24 @@
+name: Update Stats
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Push stats
+        run: |
+          curl -s "https://loca.lt/mytunnelpassword" > /dev/null 2>&1 || true
+          echo "{\"memoryCount\":\"$(ls /home/nick010639/.openclaw/workspace-tech/memory/*.md | wc -l | tr -d ' ')\\",\"lastUpdate\":\"$(ls -t /home/nick010639/.openclaw/workspace-tech/memory/202* | head -n 1 | tr -d ' ')\\",\"diskUsage\":\"$(df -h /home/nick010639/.openclaw/workspace-tech | tail -n 1 | awk '{print $5}')\\",\"uptime\":\"$(uptime -p | tr -d '\\n' | tr ' ' ','timestamp\":\"$(date -Iseconds)\\",\"repo\":\"nick010639/dogbot-dashboard-data\"}" > stats.json
+          git config user.email "action@github.com"
+          git config user.name "github-actions[bot]"
+          git add stats.json
+          git commit -m "Update stats $(date)"
+          git push
